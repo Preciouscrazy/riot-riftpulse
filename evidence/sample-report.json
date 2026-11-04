@@ -1,0 +1,10 @@
+{
+  "match_id": "RIFT-001",
+  "duration_seconds": 1800,
+  "invalid_rows": 0,
+  "players": [
+    {"player_id": "blue_fox", "kills": 5, "deaths": 2, "assists": 6, "gold_earned": 6100, "gold_per_minute": 203.33, "objectives": 3, "tower_damage": 3400},
+    {"player_id": "red_comet", "kills": 2, "deaths": 2, "assists": 2, "gold_earned": 2400, "gold_per_minute": 80.00, "objectives": 0, "tower_damage": 400}
+  ],
+  "event_bursts": []
+}

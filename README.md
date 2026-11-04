@@ -147,6 +147,21 @@ The application successfully processed a fictional match-event dataset and gener
 
 The report includes per-player kills, deaths, assists, gold earned, gold per minute, objectives, and tower damage.
 
+### Preliminary Performance Benchmark
+
+RiftPulse was benchmarked on Windows 10 using an MSVC Release build and synthetic match-event CSV files.
+
+| Dataset | Runs | Median execution time |
+|---|---:|---:|
+| 10,000 events | 5 | 21.98 ms |
+| 100,000 events | 5 | 132.96 ms |
+
+**Methodology:** Each dataset contained one fictional match and ten player IDs. Five independent application executions were timed using PowerShell's Stopwatch. Measurements included application startup, CSV reading, match analysis, and JSON report generation.
+
+**Limitations:** Results reflect one local Windows environment and are preliminary. They are not isolated algorithm benchmarks, real-game FPS measurements, or network-latency measurements. Additional workloads, hardware details, warm-up runs, and repeated trials would strengthen the conclusions.
+
+[View all benchmark measurements](evidence/benchmark-results.csv)
+
 ### Reproducible Evidence
 
 - [Automated test results](evidence/test-results.txt)

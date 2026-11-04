@@ -120,6 +120,44 @@ The JSON report contains:
 
 Player summaries are sorted by player ID. Gold per minute uses the match duration, with a one-minute minimum denominator to avoid division by zero.
 
+## Validation & Results
+
+RiftPulse has been built and tested on Windows and Ubuntu Linux using CMake, CTest, and GitHub Actions.
+
+### Automated Testing
+
+- **Windows 10:** Release build successful with MSVC.
+- **CTest:** 1/1 registered tests passed.
+- **Test coverage:** Six test functions covering CSV parsing, event aggregation, burst detection, malformed quotes, JSON escaping, and mixed-match rejection.
+- **GitHub Actions:** Configure, build, test, and sample execution all passed on Ubuntu Linux.
+
+[View successful GitHub Actions run](https://github.com/Preciouscrazy/riot-riftpulse/actions/runs/41789204169)
+
+### Sample Analysis Results
+
+The application successfully processed a fictional match-event dataset and generated a structured JSON report.
+
+| Metric | Result |
+|---|---|
+| Match ID | RIFT-001 |
+| Match duration | 1,800 seconds |
+| Player summaries | 2 |
+| Invalid rows | 0 |
+| Event-burst flags | 0 |
+
+The report includes per-player kills, deaths, assists, gold earned, gold per minute, objectives, and tower damage.
+
+### Reproducible Evidence
+
+- [Automated test results](evidence/test-results.txt)
+- [Generated sample JSON report](evidence/sample-report.json)
+
+### Validation Limitations
+
+The tests validate selected parser, analyzer, and serialization behaviors. They do not establish complete correctness, production readiness, real-game compatibility, or network-lag performance.
+
+The event-burst detector provides heuristic review signals, not evidence of player misconduct. All sample data is fictional.
+
 ## Architecture
 
 ```text

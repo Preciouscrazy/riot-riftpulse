@@ -231,3 +231,14 @@ Before publishing changes, build from a clean directory, run the full test suite
 ## License
 
 MIT. See [LICENSE](LICENSE).
+
+## FrameTrace-style frame-time and latency telemetry
+
+RiftPulse now offers a separate C++20 **offline telemetry-analysis mode** alongside its original match-event CLI. It calculates mean FPS, p95/p99 frame times, an approximate 1% low FPS, configurable stutter events, and **separate** request/response round-trip latency statistics (mean, median, p95 and p99). A small `steady_clock`-based API supports instrumentation of applications you control.
+
+```powershell
+.\build\Release\riftpulse.exe --telemetry data/performance_samples.csv --stutter-ms 33.3 --output telemetry-report.json
+```
+
+The [sample telemetry input](data/performance_samples.csv) and [resulting JSON report](evidence/telemetry-sample-report.json) are **synthetic**, not real Riot-game FPS or server-ping measurements. The new mode has a dedicated CTest suite. See [performance telemetry documentation](docs/performance-telemetry.md) for definitions, capture hooks, limitations, and test instructions. The existing `--input` match analysis is unchanged.
+

@@ -4,3 +4,6 @@ cmake-build-*/
 .idea/
 *.json.tmp
 report.json
+
+/build-*/
+/telemetry-report.json

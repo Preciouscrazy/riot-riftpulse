@@ -1,0 +1,28 @@
+{
+  "mode": "offline_telemetry_analysis",
+  "invalid_rows": 0,
+  "frame_time": {
+    "sample_count": 25,
+    "mean_ms": 20.948,
+    "median_ms": 16.900,
+    "p95_ms": 49.000,
+    "p99_ms": 70.000,
+    "max_ms": 70.000,
+    "mean_fps": 47.737,
+    "approximate_one_percent_low_fps": 14.286,
+    "stutter_threshold_ms": 33.300,
+    "stutter_frame_count": 3,
+    "stutter_events": [
+      {"start_timestamp_ms": 170, "end_timestamp_ms": 219, "frame_count": 2, "peak_frame_time_ms": 49.000},
+      {"start_timestamp_ms": 426, "end_timestamp_ms": 426, "frame_count": 1, "peak_frame_time_ms": 70.000}
+    ]
+  },
+  "round_trip_latency": {
+    "sample_count": 21,
+    "mean_ms": 40.376,
+    "median_ms": 37.800,
+    "p95_ms": 46.100,
+    "p99_ms": 95.200,
+    "max_ms": 95.200
+  }
+}

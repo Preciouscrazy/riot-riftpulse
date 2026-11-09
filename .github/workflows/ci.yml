@@ -17,3 +17,5 @@ jobs:
         run: ctest --test-dir build --output-on-failure
       - name: Run sample
         run: ./build/riftpulse --input data/match_events.csv --output report.json
+      - name: Run telemetry sample
+        run: ./build/riftpulse --telemetry data/performance_samples.csv --stutter-ms 33.3 --output telemetry-report.json

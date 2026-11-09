@@ -1,9 +1,14 @@
 # RiftPulse
-### Match telemetry analysis in modern C++
+### Offline telemetry analysis in C++20
 
-RiftPulse is a command-line C++20 application that validates match-event CSV files, calculates per-player match summaries, flags unusually dense event windows for human review, and writes a structured JSON report.
+RiftPulse turns CSV telemetry into structured JSON. Match mode validates events, summarizes player activity, and flags dense event windows for review. Performance mode computes frame-time percentiles and groups slow frames into stutter events, with a separate summary for observed application round-trip times.
 
-The project uses fictional sample data. It is an independent portfolio project and is **not affiliated with, endorsed by, or representative of Riot Games or any game publisher**.
+| Workflow | Example output |
+|---|---|
+| Match events | [Match JSON](evidence/sample-report.json) · two player summaries over 1,800 seconds, with zero rejected rows or burst flags |
+| Frame time and round-trip timing | [Telemetry JSON](evidence/telemetry-sample-report.json) · 25 frames, p95/p99 of 49/70 ms, three slow frames in two stutter events at 33.3 ms, and 21 observed RTT samples |
+
+Blank RTT values are excluded from the latency summary because a missing observation and a measured zero have different meanings. Separate summaries let readers inspect the two timing signals without inferring causation. The fixtures are fictional. RiftPulse is an independent offline project with no Riot Games affiliation.
 
 ## Capabilities
 
@@ -32,13 +37,14 @@ From the repository root:
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
-ctest --test-dir build --output-on-failure
+ctest --test-dir build -C Release --output-on-failure
 ```
 
-Run the sample dataset:
+Run both sample datasets:
 
 ```bash
 ./build/riftpulse --input data/match_events.csv --output report.json
+./build/riftpulse --telemetry data/performance_samples.csv --stutter-ms 33.3 --output telemetry-report.json
 ```
 
 On Windows with a Visual Studio generator, the executable is commonly located at `build/Release/riftpulse.exe`:
@@ -57,7 +63,9 @@ Omit `--output` to write the JSON report to standard output:
 
 | Option | Required | Description |
 |---|---:|---|
-| `--input <path>` | Yes | Path to the input CSV file |
+| `--input <path>` | Choose one mode | Match-event CSV |
+| `--telemetry <path>` | Choose one mode | Performance telemetry CSV |
+| `--stutter-ms <threshold>` | No | Telemetry only. Inclusive cutoff, default 33.3 ms |
 | `--output <path>` | No | Destination for the JSON report; defaults to standard output |
 
 ### Exit codes
@@ -122,16 +130,7 @@ Player summaries are sorted by player ID. Gold per minute uses the match duratio
 
 ## Validation & Results
 
-RiftPulse has been built and tested on Windows and Ubuntu Linux using CMake, CTest, and GitHub Actions.
-
-### Automated Testing
-
-- **Windows 10:** Release build successful with MSVC.
-- **CTest:** 1/1 registered tests passed.
-- **Test coverage:** Six test functions covering CSV parsing, event aggregation, burst detection, malformed quotes, JSON escaping, and mixed-match rejection.
-- **GitHub Actions:** Configure, build, test, and sample execution all passed on Ubuntu Linux.
-
-[View successful GitHub Actions run](https://github.com/Preciouscrazy/riot-riftpulse/actions/runs/41789204169)
+CMake registers two suites, `riftpulse_tests` and `riftpulse_telemetry_tests`, with six test functions each. Both executables passed in a [direct GCC 13.3 build](evidence/test-results-702ca59-linux-gcc.txt) of `702ca59`, and both CLI samples reproduced the checked-in JSON byte for byte. The [original log](evidence/test-results.txt) records the earlier match-only run.
 
 ### Sample Analysis Results
 
@@ -151,10 +150,12 @@ The report includes per-player kills, deaths, assists, gold earned, gold per min
 
 RiftPulse was benchmarked on Windows 10 using an MSVC Release build and synthetic match-event CSV files.
 
-| Dataset | Runs | Median execution time |
-|---|---:|---:|
-| 10,000 events | 5 | 21.98 ms |
-| 100,000 events | 5 | 132.96 ms |
+| Dataset | Runs | Median execution time | Range |
+|---|---:|---:|---:|
+| 10,000 events | 5 | 21.98 ms | 19.96–85.72 ms |
+| 100,000 events | 5 | 132.96 ms | 128.12–156.62 ms |
+
+The 10,000-event first run (85.72 ms) is included. These measurements predate the performance telemetry extension.
 
 **Methodology:** Each dataset contained one fictional match and ten player IDs. Five independent application executions were timed using PowerShell's Stopwatch. Measurements included application startup, CSV reading, match analysis, and JSON report generation.
 
@@ -164,7 +165,7 @@ RiftPulse was benchmarked on Windows 10 using an MSVC Release build and syntheti
 
 ### Reproducible Evidence
 
-- [Automated test results](evidence/test-results.txt)
+- [Historical match-only test results](evidence/test-results.txt)
 - [Generated sample JSON report](evidence/sample-report.json)
 
 ### Validation Limitations
@@ -241,4 +242,3 @@ RiftPulse now offers a separate C++20 **offline telemetry-analysis mode** alongs
 ```
 
 The [sample telemetry input](data/performance_samples.csv) and [resulting JSON report](evidence/telemetry-sample-report.json) are **synthetic**, not real Riot-game FPS or server-ping measurements. The new mode has a dedicated CTest suite. See [performance telemetry documentation](docs/performance-telemetry.md) for definitions, capture hooks, limitations, and test instructions. The existing `--input` match analysis is unchanged.
-

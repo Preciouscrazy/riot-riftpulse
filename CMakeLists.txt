@@ -23,6 +23,7 @@ target_link_libraries(riftpulse PRIVATE riftpulse_lib)
 
 include(CTest)
 if(BUILD_TESTING)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
     add_executable(riftpulse_tests tests/test_main.cpp)
     target_link_libraries(riftpulse_tests PRIVATE riftpulse_lib)
     add_test(NAME riftpulse_tests COMMAND riftpulse_tests)
@@ -30,4 +31,8 @@ if(BUILD_TESTING)
     add_executable(riftpulse_telemetry_tests tests/test_telemetry.cpp)
     target_link_libraries(riftpulse_telemetry_tests PRIVATE riftpulse_lib)
     add_test(NAME riftpulse_telemetry_tests COMMAND riftpulse_telemetry_tests)
+
+    add_test(NAME riftpulse_cli_tests
+        COMMAND "${Python3_EXECUTABLE}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test_cli.py"
+                "$<TARGET_FILE:riftpulse>")
 endif()

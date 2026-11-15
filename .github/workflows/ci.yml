@@ -6,16 +6,20 @@ on:
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    name: "C++ build + CLI checks (${{ matrix.os }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Configure
         run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
       - name: Build
-        run: cmake --build build --parallel 2
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
-      - name: Run sample
-        run: ./build/riftpulse --input data/match_events.csv --output report.json
-      - name: Run telemetry sample
-        run: ./build/riftpulse --telemetry data/performance_samples.csv --stutter-ms 33.3 --output telemetry-report.json
+        run: cmake --build build --config Release --parallel 2
+      - name: Test C++ and CLI behavior
+        run: ctest --test-dir build -C Release --output-on-failure

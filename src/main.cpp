@@ -6,6 +6,8 @@
 #include <charconv>
 #include <cmath>
 #include <exception>
+#include <filesystem>
+#include <system_error>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -62,6 +64,15 @@ int main(int argc, char* argv[]) {
     if (!input) {
         std::cerr << "Error: could not open input file: " << source_path << '\n';
         return 1;
+    }
+
+    // Never overwrite the input CSV with a generated report, even via an alias.
+    if (!output_path.empty()) {
+        std::error_code path_error;
+        if (std::filesystem::equivalent(source_path, output_path, path_error)) {
+            std::cerr << "Error: input and output paths refer to the same file.\n";
+            return 1;
+        }
     }
 
     try {

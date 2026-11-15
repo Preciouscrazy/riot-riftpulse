@@ -1,50 +1,52 @@
-# RiftPulse — validation matrix and reproducibility
+# RiftPulse — cross-platform validation matrix
 
-**Source:** `main` baseline commit [`421cdb2`](https://github.com/Preciouscrazy/riot-riftpulse/commit/421cdb2e0826bdabd9adc7f473e440842e4aa4b0) and proposed cross-platform upgrade branch `improve/cross-platform-ci-case-study`.
+**Validation date:** 2026-11-15  
+**Branch:** `improve/cross-platform-ci-case-study`  
+**Verified source and test changes:** commit [`c950cebe1b012a7cda7b256aa66ddacde78b1d66`](https://github.com/Preciouscrazy/riot-riftpulse/commit/c950cebe1b012a7cda7b256aa66ddacde78b1d66)  
+**PR:** [#2 — cross-platform CI, CLI safety and recruiter-ready evidence](https://github.com/Preciouscrazy/riot-riftpulse/pull/2)
 
-## Verified before this upgrade
+## Verified GitHub Actions results
 
-- [Ubuntu GitHub Actions, successful `main` run #42587121619](https://github.com/Preciouscrazy/riot-riftpulse/actions/runs/42587121619), testing the original two C++ suites and running sample CLI invocations.
-- [Historical match-only CTest log](test-results.txt): one CTest suite; **not** evidence for the current two-mode source.
-- [Sample match JSON](sample-report.json), [synthetic telemetry JSON](telemetry-sample-report.json), and [historical Windows benchmark measurements](benchmark-results.csv).
+Both [the branch push run #43691883857](https://github.com/Preciouscrazy/riot-riftpulse/actions/runs/43691883857) and [the pull-request run #43691891572](https://github.com/Preciouscrazy/riot-riftpulse/actions/runs/43691891572) completed with **success** on the same verified source commit. The workflow runs a Release CMake build and CTest for both OS targets, using Python 3.12 for the CLI tests.
 
-## Upgrade checks and status
-
-The new CI workflow specifies a matrix of `windows-latest` and `ubuntu-latest`, builds in Release configuration, and invokes CTest with `-C Release` (required for multi-configuration Visual Studio generators).
-
-| Check | Expected | Hosted result |
+| Check | Ubuntu `ubuntu-latest` | Windows `windows-latest` |
 | --- | --- | --- |
-| Windows C++20 configure/build | Success | Pending first branch CI run |
-| Ubuntu C++20 configure/build | Success | Pending first branch CI run |
-| `riftpulse_tests` | Pass (6 internal test functions) | Pending |
-| `riftpulse_telemetry_tests` | Pass (6 internal test functions) | Pending |
-| `riftpulse_cli_tests` | Pass (11 standard-library Python CLI tests) | Pending |
-| Sample JSON match | Parsed JSON equals checked-in fixture | Pending |
-| Sample telemetry JSON | Parsed JSON equals checked-in fixture | Pending |
-| Invalid inputs / exit codes / prevent input overwrite | Expected behavior | Pending |
+| CMake C++20 configuration and Release build | **PASS** | **PASS** |
+| `riftpulse_tests` — 6 C++ test functions | **PASS** | **PASS** |
+| `riftpulse_telemetry_tests` — 6 C++ test functions | **PASS** | **PASS** |
+| `riftpulse_cli_tests` — 11 Python CLI test methods | **PASS** | **PASS** |
+| Overall CTest | **3/3 PASS** | **3/3 PASS** |
 
-These are **planned expectations**, not claims of successful v1.2 hosted results. Update this record with direct workflow run links after the branch checks complete successfully.
+The CLI suite validates both sample JSON outputs against committed fixtures, verifies direct stdout and explicit output files, checks usage/input failures and partial-row exit codes, confirms deterministic repeated match output, and protects input files from being overwritten via identical input/output paths. The suite does **not** benchmark execution speed or analyze live games.
 
-## Reproduce
+## Historical evidence preserved
+
+- [Earlier Ubuntu main-branch CI](https://github.com/Preciouscrazy/riot-riftpulse/actions/runs/42587121619) passed the original two C++ test executables, before the new Python CLI suite.
+- [Earlier match-only CTest log](test-results.txt) shows only one CTest target and should not be treated as evidence for telemetry or the current test matrix.
+- [Match JSON](sample-report.json), [telemetry JSON](telemetry-sample-report.json), and [pre-existing Windows benchmark CSV](benchmark-results.csv) are committed artifacts. The benchmark is a historical synthetic-input measurement, not a newly verified CI performance result.
+
+## Reproduce the test suite
+
+### Linux
 
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
+python3 tests/test_cli.py ./build/riftpulse
 ```
 
-For Windows with Visual Studio Community 18:
+### Windows PowerShell — Visual Studio 2026
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 18 2026"
 cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
+python tests/test_cli.py .\build\Release\riftpulse.exe
 ```
 
-Optional direct CLI checks:
+The test executable is located with the CMake `$<TARGET_FILE:riftpulse>` generator expression in the actual CTest registration, making the hosted workflow independent of Windows/Linux executable subdirectories.
 
-```powershell
-python tests/test_cli.py .\\build\\Release\\riftpulse.exe
-```
+## Evidence boundaries
 
-The test script checks structured output against repository fixtures; it does not measure real-game performance or attribute bottlenecks. The synthetic benchmark log remains **historical evidence** and has not been remeasured for this change.
+These passing jobs establish that the specified unit and CLI cases succeed on the **GitHub-hosted Windows and Ubuntu environments** for the referenced code. They do not prove successful builds on every local MSVC installation, validate untested parser edge cases, establish production readiness, or measure FPS/network performance in real games. The test and documentation changes do not replace historical benchmark measurements.

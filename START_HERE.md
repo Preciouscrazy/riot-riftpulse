@@ -1,6 +1,6 @@
 # Getting Started
 
-This checklist takes you from the source archive to a verified local build.
+This checklist takes you from the repository to a verified local build. See [the README](README.md), [engineering case study](docs/case-study.md), and [validation matrix](evidence/validation-matrix.md) for tested toolchains and evidence.
 
 ## 1. Prepare your environment
 
@@ -11,7 +11,7 @@ Install Git, CMake 3.20+, and a C++20 compiler. Open the `riot-riftpulse` direct
 ```bash
 cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
-ctest --test-dir build --output-on-failure
+ctest --test-dir build -C Release --output-on-failure
 ```
 
 ## 3. Run the sample
@@ -20,7 +20,7 @@ ctest --test-dir build --output-on-failure
 ./build/riftpulse --input data/match_events.csv --output report.json
 ```
 
-On Windows with Visual Studio, use `build/Release/riftpulse.exe` if that is where CMake places the executable.
+On Windows with Visual Studio, configure with `cmake -S . -B build -G "Visual Studio 18 2026"`, build using `cmake --build build --config Release`, run `ctest --test-dir build -C Release --output-on-failure`, and use `build/Release/riftpulse.exe` for the CLI. The generator name depends on the installed Visual Studio version.
 
 ## 4. Trace the data flow
 

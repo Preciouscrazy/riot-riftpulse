@@ -14,7 +14,7 @@ The tool analyzes samples supplied by the user. It does not instrument a commerc
 
 ## A next improvement
 
-Expand CI and evidence capture so both CLI modes are exercised on every change, then add additional telemetry fixtures for invalid rows and longer stutter sequences.
+The cross-platform workflow now invokes CLI integration tests for both offline modes and their checked-in JSON reports. Future work could add fuzz testing, broader synthetic telemetry workloads, and matched performance capture methodology. See [the engineering case study](case-study.md) and [validation matrix](../evidence/validation-matrix.md).
 
 ## Evidence to open
 

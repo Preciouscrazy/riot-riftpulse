@@ -1,14 +1,19 @@
 # RiftPulse
-### Offline telemetry analysis in C++20
 
-RiftPulse turns CSV telemetry into structured JSON. Match mode validates events, summarizes player activity, and flags dense event windows for review. Performance mode computes frame-time percentiles and groups slow frames into stutter events, with a separate summary for observed application round-trip times.
+**C++20 offline match-event and performance-telemetry analysis | CMake | CTest | reproducible JSON evidence**
 
-| Workflow | Example output |
-|---|---|
-| Match events | [Match JSON](evidence/sample-report.json) · two player summaries over 1,800 seconds, with zero rejected rows or burst flags |
-| Frame time and round-trip timing | [Telemetry JSON](evidence/telemetry-sample-report.json) · 25 frames, p95/p99 of 49/70 ms, three slow frames in two stutter events at 33.3 ms, and 21 observed RTT samples |
+RiftPulse turns user-supplied CSV data into structured JSON in two independent modes: **match analysis** (per-player statistics and dense event-window signals) and **performance telemetry** (frame-time percentiles, stutter events, and separately observed request/response RTT). The goal is to make measurement rules, parser failures, and generated reports easy to examine and reproduce.
 
-Blank RTT values are excluded from the latency summary because a missing observation and a measured zero have different meanings. Separate summaries let readers inspect the two timing signals without inferring causation. The fixtures are fictional. RiftPulse is an independent offline project with no Riot Games affiliation.
+**Engineering focus:** Defensible statistics, deterministic reporting, input validation, and explicit limits on what timing samples can tell us.
+
+[Engineering case study](docs/case-study.md) · [Performance definitions](docs/performance-telemetry.md) · [CI evidence and reproduction steps](evidence/validation-matrix.md)
+
+| Offline workflow | Checked-in evidence |
+| --- | --- |
+| Match events | [Sample JSON](evidence/sample-report.json): two player summaries over a synthetic 1,800-second match, no invalid rows or burst flags |
+| Performance telemetry | [Telemetry JSON](evidence/telemetry-sample-report.json): 25 synthetic frames, p95/p99 frame time 49/70 ms; 3 stutter frames in 2 events at 33.3 ms, 21 observed RTT entries |
+
+**Measurement boundary:** A missing RTT observation is not a zero measurement. Frame-time spikes do not identify CPU, GPU, display, or network causes without independent instrumentation. All bundled fixtures are fictional, and RiftPulse is not affiliated with Riot Games.
 
 ## Capabilities
 
@@ -28,7 +33,7 @@ Blank RTT values are excluded from the latency summary because a missing observa
 - A C++20 compiler:
   - GCC 11+
   - Clang 13+
-  - A recent Visual Studio 2022 toolchain
+  - A C++20-capable Visual Studio toolchain (validated Windows runner status is recorded in the [validation matrix](evidence/validation-matrix.md))
 
 ## Build and run
 
@@ -130,7 +135,7 @@ Player summaries are sorted by player ID. Gold per minute uses the match duratio
 
 ## Validation & Results
 
-CMake registers two suites, `riftpulse_tests` and `riftpulse_telemetry_tests`, with six test functions each. Both executables passed in a [direct GCC 13.3 build](evidence/test-results-702ca59-linux-gcc.txt) of `702ca59`, and both CLI samples reproduced the checked-in JSON byte for byte. The [original log](evidence/test-results.txt) records the earlier match-only run.
+CMake registers two C++ suites, `riftpulse_tests` and `riftpulse_telemetry_tests`, with six test functions each, plus `riftpulse_cli_tests`, which exercises both workflows, golden JSON reports, exit codes, and input/output file safety. The last published `main` GitHub Actions run was a [successful Ubuntu CMake/CTest build](https://github.com/Preciouscrazy/riot-riftpulse/actions/runs/42587121619). The earlier [historical match-only CTest log](evidence/test-results.txt) is preserved as a one-suite record, not evidence for the current two-mode version. Cross-platform CI and golden-sample CLI regression tests are defined in this upgrade; consult the [validation matrix](evidence/validation-matrix.md) for the exact verified status and reproduction instructions.
 
 ### Sample Analysis Results
 
@@ -166,7 +171,10 @@ The 10,000-event first run (85.72 ms) is included. These measurements predate th
 ### Reproducible Evidence
 
 - [Historical match-only test results](evidence/test-results.txt)
-- [Generated sample JSON report](evidence/sample-report.json)
+- [Generated sample match JSON report](evidence/sample-report.json)
+- [Generated sample telemetry JSON report](evidence/telemetry-sample-report.json)
+- [Cross-platform test and verification record](evidence/validation-matrix.md)
+- [Engineering case study](docs/case-study.md)
 
 ### Validation Limitations
 
@@ -212,7 +220,8 @@ Let `n` be the number of valid events and `p` the number of distinct players.
 ## Known limitations
 
 - The input schema is intentionally small and requires one match per file.
-- The parser processes one physical CSV line at a time; quoted fields cannot span multiple lines.
+- The match parser processes one physical CSV line at a time; quoted fields cannot span multiple lines.
+- The CLI refuses to write a report over the input CSV, including equivalent existing paths; it does not provide atomic replacement or backups for distinct output files.
 - Burst thresholds are fixed by the `MatchAnalyzer` constructor and are not exposed as CLI options.
 - The analyzer is a demonstration of data processing, not a production anti-cheat, moderation, or player-risk system.
 - The application retains the input events in memory; very large telemetry streams would need a streaming or partitioned design.
